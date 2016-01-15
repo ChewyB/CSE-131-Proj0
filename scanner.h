@@ -31,8 +31,8 @@ typedef enum {
     T_Class, 
     T_Null, 
     T_Dims,
-    T_LessEqual, 
-    T_GreaterEqual, 
+    T_Lessequal, 
+    T_Greaterequal, 
     T_Equal, 
     T_NotEqual, 
     T_And, 
@@ -57,7 +57,6 @@ typedef enum {
     T_Print, 
     T_ReadInteger, 
     T_ReadLine,
-    T_NumTokenTypes, //Are we supposed to add this one into gTokenNames?
     T_Const,
     T_Uniform,
     T_Layout,
@@ -68,7 +67,7 @@ typedef enum {
     T_Default,
     T_In,
     T_Out,
-    T_InOut,
+    T_Inout,
     T_True,
     T_False,
     T_Mat2,
@@ -87,8 +86,10 @@ typedef enum {
     T_Uvec2,
     T_Uvec3,
     T_Uvec4,
-    T_Struct
-
+    T_Struct,
+    T_Inc,
+    T_Dec,
+    T_NumTokenTypes
 } TokenType;
 
  
@@ -97,7 +98,7 @@ typedef enum {
  * are used in our main program to verify output from your scanner.
  */
 static const char *gTokenNames[T_NumTokenTypes] = {
-  "T_Void", 
+  "T_Void",
   "T_Int", 
   "T_Float", 
   "T_Bool", 
@@ -105,30 +106,30 @@ static const char *gTokenNames[T_NumTokenTypes] = {
   "T_Class", 
   "T_Null", 
   "T_Dims",
-  "T_LessEqual", 
-  "T_GreaterEqual", 
+  "T_Lessequal", 
+  "T_Greaterequal", 
   "T_Equal", 
-  "T_NotEqual",
+  "T_NotEqual", 
   "T_And", 
-  "T_Or", 
+  "T_Or",
   "T_While", 
   "T_For", 
   "T_If", 
   "T_Else", 
-  "T_Return",
-  "T_Break", 
+  "T_Return", 
+  "T_Break",
   "T_Extends", 
   "T_This", 
   "T_Implements", 
-  "T_Interface",
+  "T_Interface", 
   "T_New", 
   "T_NewArray",
   "T_Identifier", 
-  "T_StringConstant",
+  "T_StringConstant", 
   "T_IntConstant", 
-  "T_FloatConstant", 
+  "T_FloatConstant",
   "T_BoolConstant", 
-  "T_Print",
+  "T_Print", 
   "T_ReadInteger", 
   "T_ReadLine",
   "T_Const",
@@ -141,7 +142,7 @@ static const char *gTokenNames[T_NumTokenTypes] = {
   "T_Default",
   "T_In",
   "T_Out",
-  "T_InOut",
+  "T_Inout",
   "T_True",
   "T_False",
   "T_Mat2",
@@ -160,7 +161,9 @@ static const char *gTokenNames[T_NumTokenTypes] = {
   "T_Uvec2",
   "T_Uvec3",
   "T_Uvec4",
-  "T_Struct"
+  "T_Struct",
+  "T_Inc",
+  "T_Dec"
 };
 
  

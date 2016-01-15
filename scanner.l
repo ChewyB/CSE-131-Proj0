@@ -46,6 +46,8 @@ struct yyltype yylloc; // manually dclared for pp1, later Yacc provides
 static void DoBeforeEachAction(); 
 #define YY_USER_ACTION DoBeforeEachAction();
 
+int numColumnsBegin = 0, numColumnsEnd = 0, numLines = 0;
+
 %}
 
  /* The section before the first %% is the Definitions section of the lex
@@ -54,30 +56,103 @@ static void DoBeforeEachAction();
   * as a simple substitution mechanism that allows for more readable
   * entries in the Rules section later. 
   */
-
+%x comment
 
 %%             /* BEGIN RULES SECTION */
  /* All patterns and actions should be placed between the start and stop
   * %% markers which delimit the Rules section. 
-  */ 
-"void" { return T_Void; }
-"int" { return T_Int; }
-"float" { return T_Float; }
-"bool" { return T_Bool; }
-"string" { return T_String; }
-"class" { return T_Class; }
-"NULL" { return T_Null; }
-"[]" { return T_Dims; }
-"<=" { return T_LessEqual; }
-">=" { return T_GreaterEqual; }
-"&&" { return T_And; }
-"||" { return T_Or; }
-"while" { return T_While; }
-"for" { return T_For; }
-"if" { return T_If; }
-"else" { return T_Else; }
-"return" { return T_Return; }
-"break" { return T_Break; }
+  */
+
+"void"		{ return T_Void; }
+"int"		{ return T_Int; }
+"float"		{ return T_Float; }
+"bool"		{ return T_Bool; }
+"string"	{ return T_String; }
+"class" 	{ return T_Class; }
+"NULL" 		{ return T_Null; }
+"[]" 		{ return T_Dims; }
+"<=" 		{ return T_Lessequal; }
+">=" 		{ return T_Greaterequal; }
+"=="		{ return T_Equal;}
+"&&" 		{ return T_And; }
+"||" 		{ return T_Or; }
+"while" 	{ return T_While; }
+"for" 		{ return T_For; }
+"if" 		{ return T_If; }
+"else" 		{ return T_Else; }
+"return" 	{ return T_Return; }
+"break" 	{ return T_Break; }
+"extends" 						{ return T_Extends; } 
+"this" 							{ return T_This; } 
+"implements" 					{ return T_Implements; } 
+"interface" 					{ return T_Interface; } 
+"new" 							{ return T_New; } 
+"newarray" 						{ return T_NewArray; }
+"true"							{ yylval.boolConstant = true; return T_BoolConstant; } 
+"false" 						{ yylval.boolConstant = false; return T_BoolConstant; }
+"print" 						{ return T_Print; }  
+"const" 						{ return T_Const; }
+"uniform" 						{ return T_Uniform; }
+"layout" 						{ return T_Layout; }
+"continue" 						{ return T_Continue; }
+"do" 							{ return T_Do; }
+"switch" 						{ return T_Switch; }
+"case" 							{ return T_Case; }
+"default" 						{ return T_Default; }
+"in" 							{ return T_In; }
+"out" 							{ return T_Out; }
+"inout" 						{ return T_Inout; }
+"mat2" 							{ return T_Mat2; }
+"mat3" 							{ return T_Mat3; }
+"mat4"							{ return T_Mat4; }
+"vec2" 							{ return T_Vec2; }
+"vec3" 							{ return T_Vec3; }
+"vec4" 							{ return T_Vec4; }
+"ivec2" 						{ return T_Ivec2; }
+"ivec3" 						{ return T_Ivec3; }
+"ivec4" 						{ return T_Ivec4; }
+"bvec2" 						{ return T_Bvec2; }
+"bvec3" 						{ return T_Bvec3; }
+"bvec4" 						{ return T_Bvec4; }
+"uint" 							{ return T_Uint; }
+"uvec2" 						{ return T_Uvec2; }
+"uvec3" 						{ return T_Uvec3; }
+"uvec4" 						{ return T_Uvec4; }
+"struct" 						{ return T_Struct; }
+"++" 							{ return T_Inc; }
+"--" 							{ return T_Dec;	}
+"+" 							{ return yytext[0]; } 
+"-" 							{ return yytext[0]; }
+"*" 							{ return yytext[0]; }
+"/" 							{ return yytext[0]; }
+"%" 							{ return yytext[0]; }
+"<" 							{ return yytext[0]; }
+">" 							{ return yytext[0]; }
+"=" 							{ return yytext[0]; }
+"!=" 							{ return yytext[0]; }
+"!" 							{ return yytext[0]; }
+";" 							{ return yytext[0]; }
+"," 							{ return yytext[0]; }
+"."								{ return yytext[0]; }
+"["								{ return yytext[0]; }
+"]"								{ return yytext[0]; }
+"("								{ return yytext[0]; }
+")"								{ return yytext[0]; }
+"{"								{ return yytext[0]; }
+"}"								{ return yytext[0]; }
+\n    							{ yylloc.first_column = 0; yylloc.last_column = 0; ++yylloc.first_line; }
+[ ]*							/* ignores spaces */
+[_a-zA-Z]+[a-zA-Z0-9]*		    { snprintf(yylval.identifier, 31, "%s", yytext); return T_Identifier; } 
+[0-9]+ 							{ yylval.integerConstant = atoi(yytext);  return T_IntConstant; }
+[0-9]*\.[0-9]+[fF]?    			{ yylval.floatConstant = strtod(yytext, NULL); return T_FloatConstant; }
+\/\/.*							/* ignores // comments */
+
+"/*"         BEGIN(comment);
+
+<comment>[^*\n]*        /* eat anything that's not a '*' */
+<comment>"*"+[^*/\n]*   /* eat up '*'s not followed by '/'s */
+<comment>\n             ++yylloc.first_line;
+<comment>"*"+"/"        BEGIN(INITIAL);
 
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
@@ -103,6 +178,9 @@ void InitScanner()
 {
     PrintDebug("lex", "Initializing scanner");
     yy_flex_debug = false;
+    yylloc.first_line = 1;
+    yylloc.first_column = 0;
+    yylloc.last_column = 0;
 }
 
 
@@ -112,4 +190,14 @@ void InitScanner()
  * to group code common to all actions.
  */
 static void DoBeforeEachAction() {
+	//
+ 
+
+
+	yylloc.first_column = yylloc.last_column + 1;
+	if(strcmp(yytext, "\t") == 0) {
+		yylloc.first_column+=7;
+	}
+	yylloc.last_column = yyleng + yylloc.first_column - 1;
+
 }
